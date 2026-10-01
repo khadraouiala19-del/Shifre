@@ -3,254 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Autonomous Neural Gateway // Live Stream Engine</title>
+    <title>Cybernetic Nano Grid // Live Stream Engine</title>
     <style>
         * {
             box-sizing: border-box;
-            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
             margin: 0;
             padding: 0;
             user-select: none;
         }
 
         body {
-            background-color: #030712;
-            color: #00ff66;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 480px;
-            margin: 0 auto;
-            min-height: 100vh;
+            background-color: #020408;
             overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .sys-header {
-            background: #0f172a;
-            border: 1px solid rgba(0, 255, 102, 0.2);
-            border-radius: 8px;
-            padding: 10px;
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .overlay-hud {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            pointer-events: none;
+            font-family: monospace;
+            z-index: 10;
         }
 
-        .sys-title {
-            font-size: 11px;
+        .hud-badge {
+            background: rgba(3, 7, 18, 0.75);
+            border: 1px solid rgba(0, 255, 128, 0.3);
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: #00ff80;
+            font-size: 10px;
+            letter-spacing: 1px;
+            backdrop-filter: blur(5px);
+        }
+
+        .hud-status {
             color: #38bdf8;
             font-weight: bold;
-            direction: ltr;
-        }
-
-        .sys-status {
-            font-size: 10px;
-            color: #22c55e;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            direction: ltr;
-        }
-
-        .blink-dot {
-            width: 8px;
-            height: 8px;
-            background: #22c55e;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #22c55e;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        .metric-card {
-            background: #09090b;
-            border: 1px solid #27272a;
-            border-radius: 8px;
-            padding: 8px;
-            text-align: center;
-        }
-
-        .metric-label {
-            font-size: 9px;
-            color: #71717a;
-            margin-bottom: 2px;
-            direction: ltr;
-        }
-
-        .metric-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #f4f4f5;
-            direction: ltr;
-        }
-
-        /* شاشة التيرمنال الآلية بالكامل */
-        .terminal-box {
-            background: #000000;
-            border: 1px solid #18181b;
-            border-radius: 8px;
-            padding: 10px;
-            height: 180px;
-            overflow-y: auto;
-            font-size: 10px;
-            direction: ltr;
-            text-align: left;
-            color: #22c55e;
-            line-height: 1.4;
-            box-shadow: inset 0 0 10px rgba(0,255,102,0.05);
-        }
-
-        .terminal-box::-webkit-scrollbar {
-            width: 4px;
-        }
-        .terminal-box::-webkit-scrollbar-thumb {
-            background: #27272a;
-            border-radius: 2px;
-        }
-
-        .progress-section {
-            background: #09090b;
-            border: 1px solid #27272a;
-            border-radius: 8px;
-            padding: 10px;
-        }
-
-        .progress-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            color: #a1a1aa;
-            margin-bottom: 6px;
-            direction: ltr;
-        }
-
-        .progress-track {
-            width: 100%;
-            height: 8px;
-            background: #18181b;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #22c55e);
-            width: 35%;
-            transition: width 0.5s ease;
-        }
-
-        .footer-sig {
-            font-size: 8px;
-            color: #52525b;
-            text-align: center;
-            direction: ltr;
-            margin-top: auto;
         }
     </style>
 </head>
 <body>
 
-    <div class="sys-header">
-        <div class="sys-title">AUTO_NODE_ENGINE // v5.2</div>
-        <div class="sys-status">
-            <div class="blink-dot"></div>
-            AUTONOMOUS SYNC
-        </div>
+    <div class="overlay-hud">
+        <div class="hud-badge">NANO_GRID // LIVE</div>
+        <div class="hud-badge hud-status" id="activeNodes">NODES: 42</div>
     </div>
 
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-label">PACKETS/SEC</div>
-            <div class="metric-value" id="packetsCount">2,410</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">LATENCY</div>
-            <div class="metric-value" id="latencyVal">12ms</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">SYS SYNC</div>
-            <div class="metric-value" id="syncPercent">35.0%</div>
-        </div>
-    </div>
-
-    <!-- شاشة التيرمنال التي تحدث نفسها ذاتياً بدون أي تدخل -->
-    <div class="terminal-box" id="terminalLogs">
-        [SYS] Autonomous engine initialized successfully...<br>
-        [NET] Establishing secure neural cluster routing...<br>
-        [OK] Node pipeline active and self-updating.<br>
-    </div>
-
-    <div class="progress-section">
-        <div class="progress-info">
-            <span>AUTOMATED_BUFFER_ALLOCATION</span>
-            <span id="bufferText">358 MB / 1024 MB</span>
-        </div>
-        <div class="progress-track">
-            <div class="progress-fill" id="bufferFill"></div>
-        </div>
-    </div>
-
-    <div class="footer-sig">
-        Autonomous Gateway Protocol • Zero-Touch Execution Environment
-    </div>
+    <canvas id="nanoCanvas"></canvas>
 
     <script>
-        let currentBuffer = 358;
-        let maxBuffer = 1024;
-        let packets = 2410;
-        const terminal = document.getElementById('terminalLogs');
+        const canvas = document.getElementById('nanoCanvas');
+        const ctx = canvas.getContext('2d');
 
-        const logPool = [
-            "Verifying cryptographic node signature...",
-            "Packet stream optimized across regional gateway...",
-            "Allocating dynamic memory buffer blocks...",
-            "Synchronizing high-speed proxy handshake...",
-            "Neural node cluster health check: PASSED.",
-            "Incoming stream telemetry packet processed successfully."
-        ];
-
-        function appendLog(text) {
-            const time = new Date().toTimeString().split(' ')[0];
-            terminal.innerHTML += `[${time}] ${text}<br>`;
-            terminal.scrollTop = terminal.scrollHeight;
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-        function updateUI() {
-            let pct = ((currentBuffer / maxBuffer) * 100).toFixed(1);
-            document.getElementById('syncPercent').innerText = pct + '%';
-            document.getElementById('bufferText').innerText = currentBuffer + ' MB / 1024 MB';
-            document.getElementById('bufferFill').style.width = pct + '%';
-            document.getElementById('packetsCount').innerText = packets.toLocaleString();
-        }
+        let particles = [];
+        const numParticles = 45;
 
-        // محرك ذاتي بالكامل يعمل تلقائياً كل ثانيتين
-        setInterval(() => {
-            // زيادة وتيرة البيانات عشوائياً لتبدو حية تماماً
-            packets += Math.floor(Math.random() * 40) - 15;
-            currentBuffer += Math.floor(Math.random() * 6) - 2;
-            
-            if(currentBuffer >= 950) currentBuffer = 200; // إعادة التدوير بسلاسة
-            if(currentBuffer < 100) currentBuffer = 150;
-
-            updateUI();
-
-            // إضافة سجل جديد بشكل عشوائي
-            if(Math.random() > 0.4) {
-                let randomMsg = logPool[Math.floor(Math.random() * logPool.length)];
-                let randomIP = '192.168.' + Math.floor(Math.random()*10) + '.' + Math.floor(Math.random()*255);
-                appendLog(`${randomMsg} [IP: ${randomIP}]`);
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 1.8;
+                this.vy = (Math.random() - 0.5) * 1.8;
+                this.radius = Math.random() * 3 + 1.5;
+                this.color = Math.random() > 0.5 ? '#00ff80' : '#38bdf8';
             }
-        }, 2000);
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        for (let i = 0; i < numParticles; i++) {
+            particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(2, 4, 8, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // رسم الخطوط الشبكية التفاعلية بين الجزيئات
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 130) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 255, 128, ${1 - dist / 130})`;
+                        ctx.lineWidth = 0.7;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // تحديث إحصائيات وهمية تلقائياً
+        setInterval(() => {
+            let count = Math.floor(Math.random() * 15) + 35;
+            document.getElementById('activeNodes').innerText = `NODES: ${count}`;
+        }, 3000);
     </script>
 </body>
 </html>
