@@ -3,155 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Cybernetic Nano Grid // Live Stream Engine</title>
+    <title>Live Stream Vault & Target Matrix</title>
     <style>
         * {
             box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
             user-select: none;
         }
 
         body {
-            background-color: #020408;
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
+            background-color: #050509;
+            color: #f8fafc;
+            padding: 14px;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            overflow: hidden;
         }
 
-        canvas {
-            display: block;
+        /* رأس الصفحة الفخم */
+        .vault-header {
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+        }
+
+        .vault-title {
+            font-size: 13px;
+            font-weight: 900;
+            color: #c084fc;
+            letter-spacing: 1px;
+            direction: ltr;
+        }
+
+        .vault-subtitle {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+
+        /* صندوق الهدف التفاعلي الكبير */
+        .goal-box {
+            background: #09090b;
+            border: 1px solid #27272a;
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            position: relative;
+        }
+
+        .goal-glow {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            border-radius: 14px;
+            background: radial-gradient(circle at center, rgba(168, 85, 247, 0.12) 0%, transparent 70%);
+            pointer-events: none;
         }
 
-        .overlay-hud {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
+        .goal-label {
+            font-size: 11px;
+            color: #a1a1aa;
+            margin-bottom: 4px;
+        }
+
+        .goal-numbers {
+            font-size: 22px;
+            font-weight: 900;
+            color: #38bdf8;
+            direction: ltr;
+            margin-bottom: 12px;
+        }
+
+        /* شريط التقدم الفخم */
+        .progress-track {
+            width: 100%;
+            height: 12px;
+            background: #18181b;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #27272a;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899);
+            width: 42%;
+            transition: width 0.6s ease;
+            border-radius: 6px;
+        }
+
+        .progress-stats {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            pointer-events: none;
-            font-family: monospace;
-            z-index: 10;
-        }
-
-        .hud-badge {
-            background: rgba(3, 7, 18, 0.75);
-            border: 1px solid rgba(0, 255, 128, 0.3);
-            padding: 6px 12px;
-            border-radius: 6px;
-            color: #00ff80;
             font-size: 10px;
-            letter-spacing: 1px;
-            backdrop-filter: blur(5px);
+            color: #71717a;
+            margin-top: 6px;
+            direction: ltr;
         }
 
-        .hud-status {
-            color: #38bdf8;
+        /* الإحصائيات الحية للمشاهدين والدعم */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .stat-card {
+            background: #09090b;
+            border: 1px solid #27272a;
+            border-radius: 10px;
+            padding: 10px 6px;
+            text-align: center;
+        }
+
+        .stat-lbl {
+            font-size: 9px;
+            color: #71717a;
+            margin-bottom: 2px;
+        }
+
+        .stat-val {
+            font-size: 13px;
             font-weight: bold;
+            color: #f8fafc;
+            direction: ltr;
+        }
+
+        /* شريط التنبيهات والأحداث الحية المتحركة */
+        .live-ticker {
+            background: #000000;
+            border: 1px solid #18181b;
+            border-radius: 10px;
+            padding: 10px;
+            height: 110px;
+            overflow-y: auto;
+            font-size: 10px;
+            direction: ltr;
+            text-align: left;
+            color: #a855f7;
+            line-height: 1.5;
+            box-shadow: inset 0 0 10px rgba(168, 85, 247, 0.05);
+        }
+
+        .live-ticker::-webkit-scrollbar {
+            width: 3px;
+        }
+        .live-ticker::-webkit-scrollbar-thumb {
+            background: #27272a;
+        }
+
+        .footer-tag {
+            font-size: 8px;
+            color: #52525b;
+            text-align: center;
+            direction: ltr;
+            margin-top: auto;
         }
     </style>
 </head>
 <body>
 
-    <div class="overlay-hud">
-        <div class="hud-badge">NANO_GRID // LIVE</div>
-        <div class="hud-badge hud-status" id="activeNodes">NODES: 42</div>
+    <div class="vault-header">
+        <div class="vault-title">LIVE STREAM TARGET MATRIX</div>
+        <div class="vault-subtitle">الهدف التفاعلي المباشر لدعم البث</div>
     </div>
 
-    <canvas id="nanoCanvas"></canvas>
+    <div class="goal-box">
+        <div class="goal-glow"></div>
+        <div class="goal-label">الهدف الحالي للوصول إلى المرحلة التاليه</div>
+        <div class="goal-numbers" id="goalText">4,250 / 10,000 XP</div>
+        
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="progress-stats">
+            <span id="progressPercent">42.5%</span>
+            <span>TARGET: LEVEL II</span>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-lbl">SUPPORTERS</div>
+            <div class="stat-val" id="supporterCount">142</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-lbl">STREAM RATING</div>
+            <div class="stat-val" style="color: #4ade80;">99.4%</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-lbl">ACTIVE SYNC</div>
+            <div class="stat-val" id="activeScore">LIVE</div>
+        </div>
+    </div>
+
+    <div class="live-ticker" id="liveTicker">
+        [SYSTEM] Live stream target matrix online...<br>
+        [INFO] Community contribution goal initialized.<br>
+        [READY] Awaiting live stream interaction events...<br>
+    </div>
+
+    <div class="footer-tag">
+        Autonomous Engagement Stream Engine • Zero-Touch Interface
+    </div>
 
     <script>
-        const canvas = document.getElementById('nanoCanvas');
-        const ctx = canvas.getContext('2d');
+        let currentXP = 4250;
+        let targetXP = 10000;
+        let supporters = 142;
+        const ticker = document.getElementById('liveTicker');
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        const eventsPool = [
+            "New stream viewer joined from recommendation stream.",
+            "Community engagement multiplier active [1.5x].",
+            "Target synchronization verified with regional cluster.",
+            "Stream interaction rate surging across active nodes.",
+            "Node progression stability confirmed at 100%."
+        ];
 
-        let particles = [];
-        const numParticles = 45;
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 1.8;
-                this.vy = (Math.random() - 0.5) * 1.8;
-                this.radius = Math.random() * 3 + 1.5;
-                this.color = Math.random() > 0.5 ? '#00ff80' : '#38bdf8';
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-
-                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 12;
-                ctx.shadowColor = this.color;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
+        function appendTicker(text) {
+            const time = new Date().toTimeString().split(' ')[0];
+            ticker.innerHTML += `[${time}] ${text}<br>`;
+            ticker.scrollTop = ticker.scrollHeight;
         }
 
-        for (let i = 0; i < numParticles; i++) {
-            particles.push(new Particle());
+        function updateVaultUI() {
+            let pct = ((currentXP / targetXP) * 100).toFixed(1);
+            document.getElementById('goalText').innerText = currentXP.toLocaleString() + ' / ' + targetXP.toLocaleString() + ' XP';
+            document.getElementById('progressPercent').innerText = pct + '%';
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('supporterCount').innerText = supporters;
         }
 
-        function animate() {
-            ctx.fillStyle = 'rgba(2, 4, 8, 0.2)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // رسم الخطوط الشبكية التفاعلية بين الجزيئات
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-
-                for (let j = i + 1; j < particles.length; j++) {
-                    let dx = particles[i].x - particles[j].x;
-                    let dy = particles[i].y - particles[j].y;
-                    let dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < 130) {
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(0, 255, 128, ${1 - dist / 130})`;
-                        ctx.lineWidth = 0.7;
-                        ctx.stroke();
-                    }
-                }
-            }
-
-            requestAnimationFrame(animate);
-        }
-
-        animate();
-
-        // تحديث إحصائيات وهمية تلقائياً
+        // محرك ذاتي يحدث الأرقام والمؤشرات بانتظام لتبقى الشاشة حية ومشتعلة طوال البث
         setInterval(() => {
-            let count = Math.floor(Math.random() * 15) + 35;
-            document.getElementById('activeNodes').innerText = `NODES: ${count}`;
-        }, 3000);
+            currentXP += Math.floor(Math.random() * 35) + 10;
+            if(Math.random() > 0.5) {
+                supporters += 1;
+            }
+            
+            if(currentXP >= targetXP) {
+                currentXP = 1200;
+                targetXP += 5000;
+                appendTicker(`[MILESTONE] Target unlocked! Advancing to next tier.`);
+            }
+
+            updateVaultUI();
+
+            if(Math.random() > 0.4) {
+                let randomEvent = eventsPool[Math.floor(Math.random() * eventsPool.length)];
+                appendTicker(randomEvent);
+            }
+        }, 2500);
     </script>
 </body>
 </html>
